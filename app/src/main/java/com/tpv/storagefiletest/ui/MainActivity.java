@@ -37,12 +37,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String SDCARD = "/mnt/external_sd";
     public static final int MEDIA_MOUNTED_UPDATE_UI = 0;
 
-    private Context context;
+    private static Context context;
     private int WinWidth;
     private ListView lv_storage_info;
-    private StorageManager mStorageManager;
-    private StorageListAdapter adapter;
-    private ArrayList<StorageInfo> maps = new ArrayList<>();
+    private static StorageManager mStorageManager;
+    private static StorageListAdapter adapter;
+    private static ArrayList<StorageInfo> maps = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         WinWidth = metrics.widthPixels;
-        MyLog.i("WinWidth = " + WinWidth);
 
         try {
             maps = getStorageInfo();
@@ -66,13 +65,16 @@ public class MainActivity extends AppCompatActivity {
         lv_storage_info.setAdapter(adapter);
     }
 
-    Handler mHandler = new Handler() {
+    public static Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
                 case MEDIA_MOUNTED_UPDATE_UI:
-                    UpdateListView();
+                    if (context != null) {
+                        UpdateStorageInfo();
+                        adapter.notifyDataSetChanged();
+                    }
                     break;
                 default:
                     break;
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void UpdateStorageInfo() {
+    private static void UpdateStorageInfo() {
         try {
             if (maps.size() == 0) {
                 maps = getStorageInfo();
@@ -95,14 +97,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             MyLog.i("Can not get storagevolume list.");
         }
-        for (StorageInfo info : maps) {
-            MyLog.i(info.toString());
-        }
-    }
-
-    private void UpdateListView() {
-        UpdateStorageInfo();
-        adapter.notifyDataSetChanged();
     }
 
     private class HolderView {
@@ -138,19 +132,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            HolderView holder;
+            HolderView holder = new HolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.list_storage_main, null);
-                holder = new HolderView();
+                //holder = new HolderView();
                 holder.tv_label = (TextView) convertView.findViewById(R.id.tv_storage_label);
+                holder.tv_label.setWidth(WinWidth / 10);
                 holder.tv_freesize = (TextView) convertView.findViewById(R.id.tv_storage_freesize);
+                holder.tv_freesize.setWidth(WinWidth / 6);
                 holder.pbc_freesize = (PercentageBarChart) convertView.findViewById(R.id.pbc_storage_freesize);
+                convertView.setTag(holder);
             } else {
                 holder = (HolderView) convertView.getTag();
             }
-            holder.tv_label.setWidth(WinWidth / 10);
             holder.tv_label.setText(map.get(position).getUserLabel());
-            holder.tv_freesize.setWidth(WinWidth / 6);
             holder.tv_freesize.setText(Formatter.formatFileSize(context, map.get(position).getFreeSize())
                     + "/" + Formatter.formatFileSize(context, map.get(position).getMaxSize()));
             List<Entry> mEntries = new ArrayList<>();
@@ -160,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private ArrayList<StorageInfo> getStorageInfo() throws InvocationTargetException, IllegalAccessException {
+    private static ArrayList<StorageInfo> getStorageInfo() throws InvocationTargetException, IllegalAccessException {
         ArrayList<StorageInfo> storageInfos = new ArrayList<>();
         Method getVolumeList = null;
         try {
