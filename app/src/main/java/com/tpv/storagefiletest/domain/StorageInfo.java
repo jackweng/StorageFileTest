@@ -9,7 +9,6 @@ import com.tpv.storagefiletest.ui.PercentageBarChart.Entry;
  */
 
 public class StorageInfo {
-    private String mId;                     //StorageVolume.mId
     private int mStorageId;                 //StorageVolume.mStorageId
     private String mPath;                   //StorageVolume.mPath
     private String mUserLabel;              //StorageVolume.mDescription
@@ -23,16 +22,9 @@ public class StorageInfo {
     private String mUuid;                   //StorageVolume.mFsUuid
     private String mState;                  //StorageVolume.mState
     private long mMaxSize;
+    private long mUsedSize;
     private long mFreeSize;
-    private Entry mFreeSizeEntry;
-
-    public String getId() {
-        return mId;
-    }
-
-    public void setId(String Id) {
-        this.mId = Id;
-    }
+    private Entry mUsedSizeEntry;
 
     public int getStorageId() {
         return mStorageId;
@@ -138,6 +130,14 @@ public class StorageInfo {
         this.mMaxSize = MaxSize;
     }
 
+    public long getUsedSize() {
+        return mUsedSize;
+    }
+
+    public void setUsedSize(long mUsedSize) {
+        this.mUsedSize = mUsedSize;
+    }
+
     public long getFreeSize() {
         return mFreeSize;
     }
@@ -146,11 +146,31 @@ public class StorageInfo {
         this.mFreeSize = FreeSize;
     }
 
-    public Entry getFreeSizeEntry() {
-        return mFreeSizeEntry;
+    public Entry getUsedSizeEntry() {
+        return mUsedSizeEntry;
     }
 
-    public void setFreeSizeEntry(Entry FreeSizeEntry) {
-        this.mFreeSizeEntry = FreeSizeEntry;
+    public void setUsedSizeEntry(Entry FreeSizeEntry) {
+        this.mUsedSizeEntry = FreeSizeEntry;
+    }
+
+    @Override
+    public String toString() {
+        return getUserLabel() + ":\n"
+                + "StorageId = " + getStorageId() + ";\n"
+                + "Path = " + getPath() + ";\n"
+                + "isPrimary = " + isPrimary() + ";\n"
+                + "isRemovable = " + isRemovable() + ";\n"
+                + "isEmulated = " + isEmulated() + ";\n"
+                + "MtpReserveSize = " + getMtpReserveSize() + ";\n"
+                + "isAllowMassStorage = " + isAllowMassStorage() + ";\n"
+                + "MaxFileSize = " + getMaxFileSize() + ";\n"
+                + "Owner = " + getOwner() + ";\n"
+                + "Uuid = " + getUuid() + ";\n"
+                + "State = " + getState() + ";\n"
+                + "MaxSize = " + getMaxSize() + ";\n"
+                + "UsedSize = " + getUsedSize() + ";\n"
+                + "FreeSize = " + getFreeSize() + ";\n"
+                + "UsedSizeEntry = " + getUsedSizeEntry() + ";";
     }
 }

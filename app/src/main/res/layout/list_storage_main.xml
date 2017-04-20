@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="36dip"
+    android:gravity="center"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:orientation="horizontal">
 
     <TextView
         android:id="@+id/tv_storage_label"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:gravity="center"/>
 
     <TextView
         android:id="@+id/tv_storage_freesize"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:gravity="center"/>
 
     <com.tpv.storagefiletest.ui.PercentageBarChart
         android:id="@+id/pbc_storage_freesize"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="32dip"
+        android:gravity="center_vertical"
+        android:minHeight="?android:attr/listPreferredItemHeight"
+        app:minTickWidth="6dip"
+        app:emptyColor="@color/memory_avail" />
 
 </LinearLayout>
