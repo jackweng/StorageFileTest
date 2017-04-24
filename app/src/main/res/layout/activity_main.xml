@@ -8,6 +8,45 @@
     <ListView
         android:id="@+id/lv_main_storage_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/ll_main_tab"
+        android:layout_width="match_parent"
+        android:layout_height="74dip"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/tab_background" >
+        <TextView
+            android:id="@+id/tv_trans_fragment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="@color/fragment_selected_true"
+            android:text="@string/trans"/>
+        <TextView
+            android:id="@+id/tv_speed_fragment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="@color/fragment_selected_false"
+            android:text="@string/speed"/>
+        <TextView
+            android:id="@+id/tv_stress_fragment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="@color/fragment_selected_false"
+            android:text="@string/stress"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fragment_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/lv_main_storage_list"
+        android:layout_above="@id/ll_main_tab" />
 
 </RelativeLayout>

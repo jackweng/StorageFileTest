@@ -28,4 +28,6 @@
     <color name="circle_avatar_frame_color">#ffffffff</color>
     <color name="circle_avatar_frame_shadow_color">#80000000</color>
     <color name="circle_avatar_frame_pressed_color">#ffffffff</color>
+    <color name="fragment_selected_true">#ff6db56d</color>
+    <color name="fragment_selected_false">#ffffffff</color>
 </resources>
