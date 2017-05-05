@@ -40,20 +40,22 @@ public class MainActivity extends Activity implements OnClickListener {
 
     public static final String TAG = "com.tpv.storagefiletest";
     private static final String EMMC = "/storage/emulated/0";
-    private static final String SDCARD = "/mnt/external_sd";
+    private static final String SDCARD1 = "/mnt/external_sd";
+    private static final String SDCARD2= "/mnt/sdcard";
     public static final int MEDIA_MOUNTED_UPDATE_UI = 0;
 
     //fragments
-    private TransFragment transFragment;
-    private SpeedFragment speedFragment;
-    private StressFragment stressFragment;
+    private static int CurrentFragment = 0;
+    private static TransFragment transFragment;
+    private static SpeedFragment speedFragment;
+    private static StressFragment stressFragment;
 
     //textview in fragment
-    private TextView tv_trans;
-    private TextView tv_speed;
-    private TextView tv_stress;
+    private static TextView tv_trans;
+    private static TextView tv_speed;
+    private static TextView tv_stress;
 
-    private FragmentManager fragmentManager;
+    private static FragmentManager fragmentManager;
 
     private static Context context;
     private int WinWidth;
@@ -73,8 +75,6 @@ public class MainActivity extends Activity implements OnClickListener {
         WinWidth = metrics.widthPixels;
 
         initView();
-        fragmentManager = getFragmentManager();
-        setTabSelection(0);
         try {
             maps = getStorageInfo();
         } catch (Exception e) {
@@ -83,23 +83,32 @@ public class MainActivity extends Activity implements OnClickListener {
         }
         adapter = new StorageListAdapter(this, maps);
         lv_storage_info.setAdapter(adapter);
+        fragmentManager = getFragmentManager();
+        UpdateFragmentData(CurrentFragment);
+    }
+
+    @Override
+    protected void onDestroy() {
+        MyLog.i("MainActivity.onDestroy");
+        super.onDestroy();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_trans_fragment:
-                setTabSelection(0);
+                CurrentFragment = 0;
                 break;
             case R.id.tv_speed_fragment:
-                setTabSelection(1);
+                CurrentFragment = 1;
                 break;
             case R.id.tv_stress_fragment:
-                setTabSelection(2);
+                CurrentFragment = 2;
                 break;
             default:
                 break;
         }
+        UpdateFragmentData(CurrentFragment);
     }
 
     private void initView() {
@@ -121,6 +130,7 @@ public class MainActivity extends Activity implements OnClickListener {
                     if (context != null) {
                         UpdateStorageInfo();
                         adapter.notifyDataSetChanged();
+                        UpdateFragmentData(CurrentFragment);
                     }
                     break;
                 default:
@@ -128,6 +138,10 @@ public class MainActivity extends Activity implements OnClickListener {
             }
         }
     };
+
+    public ArrayList<StorageInfo> getStorageInfoList() {
+        return maps;
+    }
 
     private static void UpdateStorageInfo() {
         try {
@@ -182,7 +196,6 @@ public class MainActivity extends Activity implements OnClickListener {
             HolderView holder = new HolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.list_storage_main, null);
-                //holder = new HolderView();
                 holder.tv_label = (TextView) convertView.findViewById(R.id.tv_storage_label);
                 holder.tv_label.setWidth(WinWidth / 10);
                 holder.tv_freesize = (TextView) convertView.findViewById(R.id.tv_storage_freesize);
@@ -290,7 +303,7 @@ public class MainActivity extends Activity implements OnClickListener {
             if (info.getUserLabel() == null) {
                 if (info.getPath().equals(EMMC)) {
                     info.setUserLabel("EMMC");
-                } else if (info.getPath().equals(SDCARD)) {
+                } else if (info.getPath().equals(SDCARD1) || info.getPath().equals(SDCARD2)) {
                     info.setUserLabel("SDCard");
                 }
             }
@@ -302,7 +315,6 @@ public class MainActivity extends Activity implements OnClickListener {
                 info.setMaxSize(max_blocks * block_size);
                 info.setUsedSize((max_blocks - free_blocks) * block_size);
                 info.setFreeSize(free_blocks * block_size);
-                MyLog.i("Percentage = " + info.getUsedSize() / (float) info.getMaxSize());
                 Entry entry = PercentageBarChart.createEntry(0,
                         info.getUsedSize() / (float) info.getMaxSize(),
                         Color.GRAY);
@@ -340,9 +352,9 @@ public class MainActivity extends Activity implements OnClickListener {
      * 根据传入的index参数来设置选中的tab页。
      *
      * @param index
-     *            每个tab页对应的下标。0表示消息，1表示联系人，2表示动态，3表示设置。
+     *            每个tab页对应的下标。0表示档案传输，1表示读写速度，2表示Stress。
      */
-    private void setTabSelection(int index) {
+    private static void setTabSelection(int index) {
         // 每次选中之前先清楚掉上次的选中状态
         clearSelection();
         // 开启一个Fragment事务
@@ -351,7 +363,6 @@ public class MainActivity extends Activity implements OnClickListener {
         hideFragments(transaction);
         switch (index) {
             case 0:
-                MyLog.i("0");
                 tv_trans.setTextColor(Color.BLACK);
                 tv_trans.setBackgroundColor(Color.WHITE);
                 if (transFragment == null) {
@@ -361,7 +372,6 @@ public class MainActivity extends Activity implements OnClickListener {
                 transaction.show(transFragment);
                 break;
             case 1:
-                MyLog.i("1");
                 tv_speed.setTextColor(Color.BLACK);
                 tv_speed.setBackgroundColor(Color.WHITE);
                 if (speedFragment == null) {
@@ -372,7 +382,6 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
                 break;
             case 2:
-                MyLog.i("2");
                 tv_stress.setTextColor(Color.BLACK);
                 tv_stress.setBackgroundColor(Color.WHITE);
                 if (stressFragment == null) {
@@ -391,7 +400,7 @@ public class MainActivity extends Activity implements OnClickListener {
     /**
      * 清除掉所有的选中状态。
      */
-    private void clearSelection() {
+    private static void clearSelection() {
         tv_trans.setTextColor(Color.WHITE);
         tv_trans.setBackgroundColor(Color.argb(0, 255, 255, 255));
         tv_speed.setTextColor(Color.parseColor("#ffffffff"));
@@ -406,15 +415,34 @@ public class MainActivity extends Activity implements OnClickListener {
      * @param transaction
      *            用于对Fragment执行操作的事务
      */
-    private void hideFragments(FragmentTransaction transaction) {
+    private static void hideFragments(FragmentTransaction transaction) {
         if (transFragment != null) {
             transaction.hide(transFragment);
+            transFragment = null;
         }
         if (speedFragment != null) {
             transaction.hide(speedFragment);
+            speedFragment = null;
         }
         if (stressFragment != null) {
             transaction.hide(stressFragment);
+            stressFragment = null;
+        }
+    }
+
+    private static void UpdateFragmentData(int index) {
+        MyLog.i("CurrentFragment = " + index);
+        setTabSelection(index);
+        switch (index) {
+            case 0:
+                transFragment.setStorageInfos(maps);
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            default:
+                break;
         }
     }
 }

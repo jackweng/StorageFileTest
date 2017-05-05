@@ -3,4 +3,6 @@
     <string name="trans">档案传输</string>
     <string name="speed">读写速度</string>
     <string name="stress">Stress</string>
+    <string name="from_to">→</string>
+    <string name="btn_start_test">开始测试</string>
 </resources>
