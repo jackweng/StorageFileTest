@@ -24,11 +24,13 @@ import android.widget.TextView;
 import com.tpv.storagefiletest.R;
 import com.tpv.storagefiletest.domain.StorageInfo;
 import com.tpv.storagefiletest.domain.StorageState;
+import com.tpv.storagefiletest.domain.TestCase;
 import com.tpv.storagefiletest.fragment.SpeedFragment;
 import com.tpv.storagefiletest.fragment.StressFragment;
 import com.tpv.storagefiletest.fragment.TransFragment;
 import com.tpv.storagefiletest.ui.PercentageBarChart.Entry;
 import com.tpv.storagefiletest.utils.MyLog;
+import com.tpv.storagefiletest.utils.Utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,7 +38,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity extends Activity implements OnClickListener,
+        TransFragment.TransFragmentCallBack {
 
     public static final String TAG = "com.tpv.storagefiletest";
     private static final String EMMC = "/storage/emulated/0";
@@ -63,6 +66,9 @@ public class MainActivity extends Activity implements OnClickListener {
     private static StorageManager mStorageManager;
     private static StorageListAdapter adapter;
     private static ArrayList<StorageInfo> maps = new ArrayList<>();
+    private static ArrayList<TestCase> testCases = new ArrayList<>();
+
+    private static String transResult = "result:";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +83,7 @@ public class MainActivity extends Activity implements OnClickListener {
         initView();
         try {
             maps = getStorageInfo();
+            testCases = Utils.getTestCase(maps);
         } catch (Exception e) {
             e.printStackTrace();
             MyLog.i("Can not get storage info.");
@@ -84,6 +91,7 @@ public class MainActivity extends Activity implements OnClickListener {
         adapter = new StorageListAdapter(this, maps);
         lv_storage_info.setAdapter(adapter);
         fragmentManager = getFragmentManager();
+        setTabSelection(CurrentFragment);
         UpdateFragmentData(CurrentFragment);
     }
 
@@ -108,6 +116,7 @@ public class MainActivity extends Activity implements OnClickListener {
             default:
                 break;
         }
+        setTabSelection(CurrentFragment);
         UpdateFragmentData(CurrentFragment);
     }
 
@@ -129,6 +138,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 case MEDIA_MOUNTED_UPDATE_UI:
                     if (context != null) {
                         UpdateStorageInfo();
+                        UpdateTestCaseInfo();
                         adapter.notifyDataSetChanged();
                         UpdateFragmentData(CurrentFragment);
                     }
@@ -139,10 +149,22 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     };
 
-    public ArrayList<StorageInfo> getStorageInfoList() {
-        return maps;
+    private static void UpdateTestCaseInfo() {
+        try {
+            if (testCases.size() == 0) {
+                testCases = Utils.getTestCase(maps);
+            } else {
+                testCases.clear();
+                ArrayList<TestCase> tempInfos = Utils.getTestCase(maps);
+                for (TestCase info : tempInfos) {
+                    testCases.add(info);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            MyLog.i("Can not get storagevolume list.");
+        }
     }
-
     private static void UpdateStorageInfo() {
         try {
             if (maps.size() == 0) {
@@ -367,29 +389,30 @@ public class MainActivity extends Activity implements OnClickListener {
                 tv_trans.setBackgroundColor(Color.WHITE);
                 if (transFragment == null) {
                     transFragment = new TransFragment();
-                    transaction.add(R.id.fragment_main, transFragment);
                 }
-                transaction.show(transFragment);
+                transaction.replace(R.id.fragment_main, transFragment);
+                transaction.addToBackStack(null);
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 break;
             case 1:
                 tv_speed.setTextColor(Color.BLACK);
                 tv_speed.setBackgroundColor(Color.WHITE);
                 if (speedFragment == null) {
                     speedFragment = new SpeedFragment();
-                    transaction.add(R.id.fragment_main, speedFragment);
-                } else {
-                    transaction.show(speedFragment);
                 }
+                transaction.replace(R.id.fragment_main, speedFragment);
+                transaction.addToBackStack(null);
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 break;
             case 2:
                 tv_stress.setTextColor(Color.BLACK);
                 tv_stress.setBackgroundColor(Color.WHITE);
                 if (stressFragment == null) {
                     stressFragment = new StressFragment();
-                    transaction.add(R.id.fragment_main, stressFragment);
-                } else {
-                    transaction.show(stressFragment);
                 }
+                transaction.replace(R.id.fragment_main, stressFragment);
+                transaction.addToBackStack(null);
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 break;
             default:
                 break;
@@ -401,7 +424,7 @@ public class MainActivity extends Activity implements OnClickListener {
      * 清除掉所有的选中状态。
      */
     private static void clearSelection() {
-        tv_trans.setTextColor(Color.WHITE);
+        tv_trans.setTextColor(Color.parseColor("#ffffffff"));
         tv_trans.setBackgroundColor(Color.argb(0, 255, 255, 255));
         tv_speed.setTextColor(Color.parseColor("#ffffffff"));
         tv_speed.setBackgroundColor(Color.argb(0, 255, 255, 255));
@@ -431,11 +454,9 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private static void UpdateFragmentData(int index) {
-        MyLog.i("CurrentFragment = " + index);
-        setTabSelection(index);
         switch (index) {
             case 0:
-                transFragment.setStorageInfos(maps);
+                transFragment.setTestCaseInfo(testCases);
                 break;
             case 1:
                 break;
@@ -444,5 +465,10 @@ public class MainActivity extends Activity implements OnClickListener {
             default:
                 break;
         }
+    }
+
+    @Override
+    public void ReturnTestCase(ArrayList<TestCase> testCases) {
+        MainActivity.testCases = testCases;
     }
 }

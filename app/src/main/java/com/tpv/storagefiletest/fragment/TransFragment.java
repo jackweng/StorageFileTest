@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,11 +17,8 @@ import android.widget.TextView;
 
 import com.tpv.storagefiletest.R;
 import com.tpv.storagefiletest.R.layout;
-import com.tpv.storagefiletest.domain.StorageInfo;
 import com.tpv.storagefiletest.domain.TestCase;
-import com.tpv.storagefiletest.ui.MainActivity;
 import com.tpv.storagefiletest.utils.MyLog;
-import com.tpv.storagefiletest.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -32,31 +28,27 @@ import java.util.ArrayList;
 
 public class TransFragment extends Fragment implements OnClickListener {
 
-    private Context context;
     private ListView lv_testcase;
-    private TestCaseAdapter adapter;
-    private ArrayList<StorageInfo> Infos;
-    private ArrayList<TestCase> AllTestCases;
-    private boolean[] isNeedTest;
-    private ArrayList<TestCase> NeedTestCases;
+    private TextView tv_result;
 
-    // fragment生命周期从上到下
+    private TestCaseAdapter adapter;
+    private ArrayList<TestCase> AllTestCases;
+    private Bundle saveInstanceState;
+    private TransFragmentCallBack callBack;
+    private String testresult;
+
+    // fragment生命周期
     @Override
     public void onAttach(Context context) {
         MyLog.i("TransFragment,onAttach.");
-        Infos = ((MainActivity) context).getStorageInfoList();
         super.onAttach(context);
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         MyLog.i("TransFragment,onCreate.");
         super.onCreate(savedInstanceState);
-        this.context = getActivity();
-        AllTestCases = Utils.getTestCase(Infos);
-        if (Infos == null) {
-            MyLog.i("Infos is null.");
-        }
+        callBack = (TransFragmentCallBack) getActivity();
     }
 
     @Nullable
@@ -65,15 +57,14 @@ public class TransFragment extends Fragment implements OnClickListener {
         MyLog.i("TransFragment,onCreateView.");
         View view = inflater.inflate(layout.trans_fragment, container, false);
         lv_testcase = (ListView) view.findViewById(R.id.lv_testcase_main);
-        adapter = new TestCaseAdapter(context, AllTestCases);
+        adapter = new TestCaseAdapter(getActivity(), AllTestCases);
         lv_testcase.setAdapter(adapter);
         lv_testcase.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MyLog.i("OnItemClick");
                 AllTestCases.get(position).setNeedTest(!AllTestCases.get(position).isNeedTest());
-                MyLog.i("isNeedTest = " + AllTestCases.get(position).isNeedTest());
                 adapter.notifyDataSetChanged();
+                callBack.ReturnTestCase(AllTestCases);
             }
         });
         return view;
@@ -127,19 +118,25 @@ public class TransFragment extends Fragment implements OnClickListener {
         super.onDetach();
     }
 
-    public void setStorageInfos(ArrayList<StorageInfo> infos) {
-        if (this.Infos == null) {
-            this.Infos = infos;
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        MyLog.i("TransFragment,onSaveInstanceState.");
+        super.onSaveInstanceState(outState);
+    }
+
+    public void setTestCaseInfo(ArrayList<TestCase> cases) {
+        if (this.AllTestCases == null) {
+            this.AllTestCases = cases;
         } else {
-            this.Infos.clear();
-            for (StorageInfo info : infos) {
-                this.Infos.add(info);
+            this.AllTestCases.clear();
+            for (TestCase testCase : cases) {
+                this.AllTestCases.add(testCase);
             }
         }
     }
 
-    public void UpdateListView() {
-        adapter.notifyDataSetChanged();
+    public void setTestResult(String result) {
+        testresult = result;
     }
 
     private class HolderView {
@@ -199,5 +196,9 @@ public class TransFragment extends Fragment implements OnClickListener {
             default:
                 break;
         }
+    }
+
+    public interface TransFragmentCallBack {
+        void ReturnTestCase(ArrayList<TestCase> testCases);
     }
 }
