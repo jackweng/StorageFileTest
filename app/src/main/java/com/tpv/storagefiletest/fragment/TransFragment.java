@@ -19,6 +19,7 @@ import com.tpv.storagefiletest.R;
 import com.tpv.storagefiletest.R.layout;
 import com.tpv.storagefiletest.domain.TestCase;
 import com.tpv.storagefiletest.utils.MyLog;
+import com.tpv.storagefiletest.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -192,6 +193,12 @@ public class TransFragment extends Fragment implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_start_test:
+                for (TestCase testCase : AllTestCases) {
+                    if (testCase.isNeedTest()) {
+                        boolean result = Utils.TransFile(testCase.getStorageInfos()[0].getPath(),
+                                testCase.getStorageInfos()[1].getPath());
+                    }
+                }
                 break;
             default:
                 break;

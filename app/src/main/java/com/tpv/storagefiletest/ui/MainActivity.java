@@ -47,6 +47,10 @@ public class MainActivity extends Activity implements OnClickListener,
     private static final String SDCARD2= "/mnt/sdcard";
     public static final int MEDIA_MOUNTED_UPDATE_UI = 0;
 
+    public static final String ROOTPATH = "/TpvStorageTest";
+    public static final String SOURCEPATH = "/source";
+    public static final String TARGETPATH = "/target";
+
     //fragments
     private static int CurrentFragment = 0;
     private static TransFragment transFragment;
