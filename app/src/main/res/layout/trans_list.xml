@@ -5,8 +5,8 @@
     android:orientation="horizontal"
     android:descendantFocusability="blocksDescendants" >
 
-    <CheckBox
-        android:id="@+id/cbox_isneedtest"
+    <RadioButton
+        android:id="@+id/rb_isneedtest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="false" />

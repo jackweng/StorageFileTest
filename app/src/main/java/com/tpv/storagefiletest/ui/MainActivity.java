@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements OnClickListener,
 
     private static FragmentManager fragmentManager;
 
-    private static Context context;
+    public static Context context;
     private int WinWidth;
     private ListView lv_storage_info;
     private static StorageManager mStorageManager;

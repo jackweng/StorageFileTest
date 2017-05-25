@@ -1,7 +1,9 @@
 package com.tpv.storagefiletest.fragment;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -11,13 +13,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tpv.storagefiletest.R;
 import com.tpv.storagefiletest.R.layout;
 import com.tpv.storagefiletest.domain.TestCase;
+import com.tpv.storagefiletest.ui.MainActivity;
 import com.tpv.storagefiletest.utils.MyLog;
 import com.tpv.storagefiletest.utils.Utils;
 
@@ -32,11 +37,15 @@ public class TransFragment extends Fragment implements OnClickListener {
     private ListView lv_testcase;
     private TextView tv_result;
 
+    private Button btn_start;
+
     private TestCaseAdapter adapter;
     private ArrayList<TestCase> AllTestCases;
     private Bundle saveInstanceState;
     private TransFragmentCallBack callBack;
     private String testresult;
+
+    private Context context;
 
     // fragment生命周期
     @Override
@@ -50,6 +59,7 @@ public class TransFragment extends Fragment implements OnClickListener {
         MyLog.i("TransFragment,onCreate.");
         super.onCreate(savedInstanceState);
         callBack = (TransFragmentCallBack) getActivity();
+        context = MainActivity.context;
     }
 
     @Nullable
@@ -57,12 +67,17 @@ public class TransFragment extends Fragment implements OnClickListener {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         MyLog.i("TransFragment,onCreateView.");
         View view = inflater.inflate(layout.trans_fragment, container, false);
+        btn_start = (Button) view.findViewById(R.id.btn_start_test);
+        btn_start.setOnClickListener(this);
         lv_testcase = (ListView) view.findViewById(R.id.lv_testcase_main);
         adapter = new TestCaseAdapter(getActivity(), AllTestCases);
         lv_testcase.setAdapter(adapter);
         lv_testcase.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                for (TestCase test : AllTestCases) {
+                    test.setNeedTest(false);
+                }
                 AllTestCases.get(position).setNeedTest(!AllTestCases.get(position).isNeedTest());
                 adapter.notifyDataSetChanged();
                 callBack.ReturnTestCase(AllTestCases);
@@ -141,7 +156,7 @@ public class TransFragment extends Fragment implements OnClickListener {
     }
 
     private class HolderView {
-        public CheckBox cbox_isneedtest;
+        public RadioButton rb_isneedtest;
         public TextView tv_testcase;
     }
 
@@ -175,13 +190,13 @@ public class TransFragment extends Fragment implements OnClickListener {
             HolderView holder = new HolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(layout.trans_list, null);
-                holder.cbox_isneedtest = (CheckBox) convertView.findViewById(R.id.cbox_isneedtest);
+                holder.rb_isneedtest = (RadioButton) convertView.findViewById(R.id.rb_isneedtest);
                 holder.tv_testcase = (TextView) convertView.findViewById(R.id.tv_testcase);
                 convertView.setTag(holder);
             } else {
                 holder = (HolderView) convertView.getTag();
             }
-            holder.cbox_isneedtest.setChecked(Cases.get(position).isNeedTest());
+            holder.rb_isneedtest.setChecked(Cases.get(position).isNeedTest());
             holder.tv_testcase.setText(Cases.get(position).getStorageInfos()[0].getUserLabel()
                     + getString(R.string.from_to)
                     + Cases.get(position).getStorageInfos()[1].getUserLabel());
@@ -195,8 +210,32 @@ public class TransFragment extends Fragment implements OnClickListener {
             case R.id.btn_start_test:
                 for (TestCase testCase : AllTestCases) {
                     if (testCase.isNeedTest()) {
-                        boolean result = Utils.TransFile(testCase.getStorageInfos()[0].getPath(),
-                                testCase.getStorageInfos()[1].getPath());
+                        MyLog.i(testCase.getStorageInfos()[0].getUserLabel());
+                        MyLog.i(testCase.getStorageInfos()[1].getUserLabel());
+                        if (Utils.CheckFileIsExists(testCase.getStorageInfos()[0].getPath(),
+                                testCase.getStorageInfos()[1].getPath())){
+                            // TODO Show child files of source directory
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setCancelable(false);
+                            builder.setTitle(getString(R.string.title_choose_file));
+                            builder.setPositiveButton(getString(R.string.dialog_next), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // TODO
+                                }
+                            });
+                            builder.setNegativeButton(getString(R.string.dialog_cancle), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                            builder.create().show();
+                        } else {
+                            Toast.makeText(MainActivity.context,
+                                    getString(R.string.message_source_file_not_found),
+                                    Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
                 break;
