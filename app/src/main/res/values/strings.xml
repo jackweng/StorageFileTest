@@ -7,6 +7,9 @@
     <string name="btn_start_test">开始测试</string>
     <string name="message_source_file_not_found">源文件或文件夹无法找到！</string>
     <string name="title_choose_file">请选择需要传输的文件</string>
+    <string name="message_choose_file_error">没有选择需要传输的文件！</string>
+    <string name="title_trans_count">请输入需要传输文件的次数</string>
     <string name="dialog_next">下一步</string>
+    <string name="dialog_ok">确认</string>
     <string name="dialog_cancle">取消</string>
 </resources>

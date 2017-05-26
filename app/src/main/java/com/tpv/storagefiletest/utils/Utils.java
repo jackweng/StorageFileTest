@@ -125,7 +125,7 @@ public class Utils {
         return true;
     }
 
-    private static void nioTransferCopy(File source, File target) {
+    public static boolean TransferCopy(File source, File target) {
         FileChannel in = null;
         FileChannel out = null;
         FileInputStream inStream = null;
@@ -143,5 +143,10 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return true;
+    }
+
+    public static boolean CopyFileResult(String source, String target, int count) {
+        return false;
     }
 }

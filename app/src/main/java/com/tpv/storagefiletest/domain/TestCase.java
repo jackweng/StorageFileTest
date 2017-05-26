@@ -29,7 +29,7 @@ public class TestCase implements Parcelable {
 
     @Override
     public String toString() {
-        return getStorageInfos()[0] + "--" + getStorageInfos()[1] + "--" + isNeedTest();
+        return getStorageInfos()[0].getPath() + "--" + getStorageInfos()[1].getPath() + "--" + isNeedTest();
     }
 
     @Override

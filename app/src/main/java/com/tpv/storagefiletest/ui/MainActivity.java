@@ -76,6 +76,7 @@ public class MainActivity extends Activity implements OnClickListener,
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        MyLog.i("MianActivity.onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
@@ -85,18 +86,58 @@ public class MainActivity extends Activity implements OnClickListener,
         WinWidth = metrics.widthPixels;
 
         initView();
-        try {
-            maps = getStorageInfo();
-            testCases = Utils.getTestCase(maps);
-        } catch (Exception e) {
-            e.printStackTrace();
-            MyLog.i("Can not get storage info.");
+        if (savedInstanceState == null) {
+            try {
+                maps = getStorageInfo();
+                testCases = Utils.getTestCase(maps);
+            } catch (Exception e) {
+                e.printStackTrace();
+                MyLog.i("Can not get storage info.");
+            }
+        } else {
+            testCases = savedInstanceState.getParcelableArrayList("TestCases");
         }
         adapter = new StorageListAdapter(this, maps);
         lv_storage_info.setAdapter(adapter);
         fragmentManager = getFragmentManager();
         setTabSelection(CurrentFragment);
-        UpdateFragmentData(CurrentFragment);
+    }
+
+    @Override
+    protected void onResume() {
+        MyLog.i("MianActivity.onResume");
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        MyLog.i("MianActivity.onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        MyLog.i("MianActivity.onRestart");
+        super.onRestart();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        MyLog.i("MianActivity.onSaveInstanceState");
+        outState.putParcelableArrayList("TestCases", testCases);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onPause() {
+        MyLog.i("MianActivity.onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        MyLog.i("MianActivity.onStop");
+        super.onStop();
     }
 
     @Override
@@ -121,7 +162,6 @@ public class MainActivity extends Activity implements OnClickListener,
                 break;
         }
         setTabSelection(CurrentFragment);
-        UpdateFragmentData(CurrentFragment);
     }
 
     private void initView() {
@@ -394,8 +434,11 @@ public class MainActivity extends Activity implements OnClickListener,
                 if (transFragment == null) {
                     transFragment = new TransFragment();
                 }
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList("AllTestCases", testCases);
+                transFragment.setArguments(bundle);
                 transaction.replace(R.id.fragment_main, transFragment);
-                transaction.addToBackStack(null);
+//                transaction.addToBackStack(null);
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 break;
             case 1:
@@ -405,7 +448,7 @@ public class MainActivity extends Activity implements OnClickListener,
                     speedFragment = new SpeedFragment();
                 }
                 transaction.replace(R.id.fragment_main, speedFragment);
-                transaction.addToBackStack(null);
+//                transaction.addToBackStack(null);
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 break;
             case 2:
@@ -415,7 +458,7 @@ public class MainActivity extends Activity implements OnClickListener,
                     stressFragment = new StressFragment();
                 }
                 transaction.replace(R.id.fragment_main, stressFragment);
-                transaction.addToBackStack(null);
+//                transaction.addToBackStack(null);
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 break;
             default:
