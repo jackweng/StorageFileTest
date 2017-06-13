@@ -5,10 +5,11 @@ package com.tpv.storagefiletest.domain;
  */
 
 public class FileInfo {
-    public boolean isChecked;
-    public String FileName;
-    public String FileSize;
-    public String FilePath;
+    private boolean isChecked;
+    private String FileName;
+    private int FileSizeInt;
+    private String FileSize;
+    private String FilePath;
 
     public boolean isChecked() {
         return isChecked;
@@ -24,6 +25,14 @@ public class FileInfo {
 
     public void setFileName(String fileName) {
         FileName = fileName;
+    }
+
+    public int getFileSizeInt() {
+        return FileSizeInt;
+    }
+
+    public void setFileSizeInt(int fileSizeInt) {
+        FileSizeInt = fileSizeInt;
     }
 
     public String getFileSize() {

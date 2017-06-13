@@ -1,5 +1,7 @@
 package com.tpv.storagefiletest.utils;
 
+import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.tpv.storagefiletest.domain.StorageInfo;
@@ -9,6 +11,7 @@ import com.tpv.storagefiletest.ui.MainActivity;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
@@ -125,28 +128,47 @@ public class Utils {
         return true;
     }
 
-    public static boolean TransferCopy(File source, File target) {
+    public static boolean TransferCopy(File source, File target) throws IOException {
         FileChannel in = null;
         FileChannel out = null;
         FileInputStream inStream = null;
         FileOutputStream outStream = null;
-        try {
-            inStream = new FileInputStream(source);
-            outStream = new FileOutputStream(target);
-            in = inStream.getChannel();
-            out = outStream.getChannel();
-            in.transferTo(0, in.size(), out);
-            inStream.close();
-            in.close();
-            outStream.close();
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        inStream = new FileInputStream(source);
+        outStream = new FileOutputStream(target);
+        in = inStream.getChannel();
+        out = outStream.getChannel();
+        in.transferTo(0, in.size(), out);
+        inStream.close();
+        in.close();
+        outStream.close();
+        out.close();
+        long endtime = System.currentTimeMillis();
         return true;
     }
 
-    public static boolean CopyFileResult(String source, String target, int count) {
-        return false;
+    /*
+     * Java文件操作 获取文件扩展名
+     *
+     */
+    public static String getExtensionName(String filename) {
+        if ((filename != null) && (filename.length() > 0)) {
+            int dot = filename.lastIndexOf('.');
+            if ((dot >-1) && (dot < (filename.length() - 1))) {
+                return filename.substring(dot + 1);
+            }
+        }
+        return filename;
+    }
+    /*
+     * Java文件操作 获取不带扩展名的文件名
+     */
+    public static String getFileNameNoEx(String filename) {
+        if ((filename != null) && (filename.length() > 0)) {
+            int dot = filename.lastIndexOf('.');
+            if ((dot >-1) && (dot < (filename.length()))) {
+                return filename.substring(0, dot);
+            }
+        }
+        return filename;
     }
 }

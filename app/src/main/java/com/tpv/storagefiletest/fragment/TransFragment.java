@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 import com.tpv.storagefiletest.R;
 import com.tpv.storagefiletest.domain.FileInfo;
 import com.tpv.storagefiletest.domain.TestCase;
+import com.tpv.storagefiletest.domain.TestInfo;
 import com.tpv.storagefiletest.ui.MainActivity;
 import com.tpv.storagefiletest.utils.MyLog;
 import com.tpv.storagefiletest.utils.Utils;
@@ -57,7 +59,7 @@ public class TransFragment extends Fragment implements OnClickListener {
 
     private boolean canNext;
 
-    private String SourceFilePath;
+    private FileInfo SourceFileInfo;
     private String TargetDirectoryPath;
     private int TransCount;
 
@@ -267,7 +269,7 @@ public class TransFragment extends Fragment implements OnClickListener {
                                     }
                                     infos.get(position).setChecked(true);
                                     dialogListAdapter.notifyDataSetChanged();
-                                    SourceFilePath = infos.get(position).getFilePath();
+                                    SourceFileInfo = infos.get(position);
                                 }
                             });
                             builder.show();
@@ -350,8 +352,10 @@ public class TransFragment extends Fragment implements OnClickListener {
                 info.setFilePath(child.getAbsolutePath());
                 try {
                     FileInputStream fis = new FileInputStream(child);
+                    info.setFileSizeInt(fis.available());
                     info.setFileSize(Formatter.formatFileSize(context, fis.available()));
                 } catch (Exception e) {
+                    info.setFileSizeInt(0);
                     info.setFileSize("0 KB");
                 }
                 list.add(info);
@@ -374,12 +378,14 @@ public class TransFragment extends Fragment implements OnClickListener {
                     Toast.makeText(context, "", Toast.LENGTH_LONG).show();
                 } else {
                     TransCount = Integer.parseInt(edt_count.getText().toString());
-                    Toast.makeText(context,
-                            "SourceFilePath = " + SourceFilePath
-                            + "\nTargetDirectoryPath = " + TargetDirectoryPath
-                            + "\nTransCount = " + TransCount,
-                            Toast.LENGTH_LONG).show();
-                    Utils.CopyFileResult(SourceFilePath, TargetDirectoryPath, TransCount);
+                    TestInfo info = new TestInfo();
+                    info.setSourceFileInfo(SourceFileInfo);
+                    info.setTargetPath(TargetDirectoryPath);
+                    info.setCount(TransCount);
+                    Message msg = MainActivity.mHandler.obtainMessage();
+                    msg.obj = info;
+                    msg.what = MainActivity.START_FILE_TRANS_TEST;
+                    MainActivity.mHandler.sendMessage(msg);
                 }
             }
         });

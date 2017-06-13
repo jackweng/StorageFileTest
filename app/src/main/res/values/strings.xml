@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">StorageFileTest</string>
     <string name="trans">档案传输</string>
     <string name="speed">读写速度</string>
@@ -12,4 +12,9 @@
     <string name="dialog_next">下一步</string>
     <string name="dialog_ok">确认</string>
     <string name="dialog_cancle">取消</string>
+    <plurals name="show_test_countdown">
+        <item quantity="zero">测试已完成！</item>
+        <item quantity="one">正在进行第<xliff:g id="step_count">%1$d</xliff:g>次测试...</item>
+        <item quantity="other">正在进行第<xliff:g id="step_count">%1$d</xliff:g>次测试...</item>
+    </plurals>
 </resources>

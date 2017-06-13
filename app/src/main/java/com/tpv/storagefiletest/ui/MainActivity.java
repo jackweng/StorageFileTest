@@ -3,8 +3,10 @@ package com.tpv.storagefiletest.ui;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +15,7 @@ import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.text.format.Formatter;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,6 +28,8 @@ import com.tpv.storagefiletest.R;
 import com.tpv.storagefiletest.domain.StorageInfo;
 import com.tpv.storagefiletest.domain.StorageState;
 import com.tpv.storagefiletest.domain.TestCase;
+import com.tpv.storagefiletest.domain.TestInfo;
+import com.tpv.storagefiletest.domain.TransResult;
 import com.tpv.storagefiletest.fragment.SpeedFragment;
 import com.tpv.storagefiletest.fragment.StressFragment;
 import com.tpv.storagefiletest.fragment.TransFragment;
@@ -32,6 +37,8 @@ import com.tpv.storagefiletest.ui.PercentageBarChart.Entry;
 import com.tpv.storagefiletest.utils.MyLog;
 import com.tpv.storagefiletest.utils.Utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -46,6 +53,8 @@ public class MainActivity extends Activity implements OnClickListener,
     private static final String SDCARD1 = "/mnt/external_sd";
     private static final String SDCARD2= "/mnt/sdcard";
     public static final int MEDIA_MOUNTED_UPDATE_UI = 0;
+    public static final int START_FILE_TRANS_TEST = 1;
+    public static final int SHOW_DIALOG_TEST_COUNT = 2;
 
     public static final String ROOTPATH = "/TpvStorageTest";
     public static final String SOURCEPATH = "/source";
@@ -174,7 +183,7 @@ public class MainActivity extends Activity implements OnClickListener,
         tv_stress.setOnClickListener(this);
     }
 
-    public static Handler mHandler = new Handler() {
+    public Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -186,6 +195,13 @@ public class MainActivity extends Activity implements OnClickListener,
                         adapter.notifyDataSetChanged();
                         UpdateFragmentData(CurrentFragment);
                     }
+                    break;
+                case START_FILE_TRANS_TEST:
+                    TestInfo info = (TestInfo) msg.obj;
+                    TransFileTask task = new TransFileTask(context);
+                    task.execute(info);
+                    break;
+                case SHOW_DIALOG_TEST_COUNT:
                     break;
                 default:
                     break;
@@ -517,5 +533,69 @@ public class MainActivity extends Activity implements OnClickListener,
     @Override
     public void ReturnTestCase(ArrayList<TestCase> testCases) {
         MainActivity.testCases = testCases;
+    }
+
+    private class TransFileTask extends AsyncTask<TestInfo, Integer, Boolean> {
+
+        private ArrayList<TransResult> results = new ArrayList<>();
+        private int i;
+        private int j;
+        private boolean isfileexist;
+        private ProgressDialog pDialog;
+
+        public TransFileTask(Context context) {
+            isfileexist = false;
+            i = 0;
+            j = 0;
+            pDialog = new ProgressDialog(context);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean value) {
+            super.onPostExecute(value);
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer[] values) {
+            if (values[0] > 0) {
+                pDialog.setMessage(FormatTestCountString(values[0]));
+            } else {
+                pDialog.setMessage(FormatTestCountString(values[0]));
+            }
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected Boolean doInBackground(TestInfo[] params) {
+            File SourceFile = new File(params[0].getSourceFileInfo().getFilePath());
+            File TargetFile = new File(params[0].getTargetPath() + "/" + params[0].getSourceFileInfo().getFileName());
+            while (i++ < params[0].getCount()) {
+                while (TargetFile.exists()) {
+                    TargetFile = new File(params[0].getTargetPath()
+                            + "/" + Utils.getFileNameNoEx(params[0].getSourceFileInfo().getFileName())
+                            + (++j) + "."
+                            + Utils.getExtensionName(params[0].getSourceFileInfo().getFileName()));
+                }
+                TransResult result = new TransResult();
+                result.setTestIndex(i);
+                long starttime = System.currentTimeMillis();
+                try {
+                    result.setIndexResult(Utils.TransferCopy(SourceFile, TargetFile));
+                    result.setIndexReason("");
+                } catch (IOException e) {
+                    result.setIndexResult(false);
+                    result.setIndexReason("IOException");
+                }
+                result.setIndexTime(System.currentTimeMillis() - starttime);
+                results.add(result);
+                publishProgress(i);
+            }
+            Log.i(TAG, "i = " + i);
+            return true;
+        }
+    }
+
+    private String FormatTestCountString(int count) {
+        return getResources().getQuantityString(R.plurals.show_test_countdown, count, count);
     }
 }
