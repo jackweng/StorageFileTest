@@ -5,6 +5,8 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -33,9 +35,12 @@ import com.tpv.storagefiletest.domain.TransResult;
 import com.tpv.storagefiletest.fragment.SpeedFragment;
 import com.tpv.storagefiletest.fragment.StressFragment;
 import com.tpv.storagefiletest.fragment.TransFragment;
+import com.tpv.storagefiletest.receiver.StorageMountReceiver;
 import com.tpv.storagefiletest.ui.PercentageBarChart.Entry;
 import com.tpv.storagefiletest.utils.MyLog;
 import com.tpv.storagefiletest.utils.Utils;
+
+import junit.framework.TestResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends Activity implements OnClickListener,
-        TransFragment.TransFragmentCallBack {
+        TransFragment.TransFragmentCallBack, StorageMountReceiver.StorageStateListener {
 
     public static final String TAG = "com.tpv.storagefiletest";
     private static final String EMMC = "/storage/emulated/0";
@@ -80,8 +85,12 @@ public class MainActivity extends Activity implements OnClickListener,
     private static StorageListAdapter adapter;
     private static ArrayList<StorageInfo> maps = new ArrayList<>();
     private static ArrayList<TestCase> testCases = new ArrayList<>();
+    private static ArrayList<TransResult> results = new ArrayList<>();
 
     private static String transResult = "result:";
+
+    private StorageMountReceiver receiver;
+    private IntentFilter intentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +102,16 @@ public class MainActivity extends Activity implements OnClickListener,
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         WinWidth = metrics.widthPixels;
+
+        receiver = new StorageMountReceiver(this);
+        intentFilter = new IntentFilter();
+        intentFilter.setPriority(Integer.MAX_VALUE);
+        intentFilter.addAction(Intent.ACTION_MEDIA_MOUNTED);
+        intentFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        intentFilter.addAction(Intent.ACTION_MEDIA_REMOVED);
+        intentFilter.addAction(Intent.ACTION_MEDIA_EJECT);
+        intentFilter.addAction(Intent.ACTION_MEDIA_BAD_REMOVAL);
+        intentFilter.addDataScheme("file");
 
         initView();
         if (savedInstanceState == null) {
@@ -115,6 +134,7 @@ public class MainActivity extends Activity implements OnClickListener,
     @Override
     protected void onResume() {
         MyLog.i("MianActivity.onResume");
+        registerReceiver(receiver, intentFilter);
         super.onResume();
     }
 
@@ -152,6 +172,7 @@ public class MainActivity extends Activity implements OnClickListener,
     @Override
     protected void onDestroy() {
         MyLog.i("MainActivity.onDestroy");
+        unregisterReceiver(receiver);
         super.onDestroy();
     }
 
@@ -535,23 +556,46 @@ public class MainActivity extends Activity implements OnClickListener,
         MainActivity.testCases = testCases;
     }
 
+    @Override
+    public void onStartTest(Object obj) {
+        Message msg = mHandler.obtainMessage();
+        msg.obj = obj;
+        msg.what = START_FILE_TRANS_TEST;
+        mHandler.sendMessage(msg);
+    }
+
+    @Override
+    public void onStorageStateChanged() {
+        Message msg = mHandler.obtainMessage();
+        msg.what = MEDIA_MOUNTED_UPDATE_UI;
+        mHandler.sendMessage(msg);
+    }
+
     private class TransFileTask extends AsyncTask<TestInfo, Integer, Boolean> {
 
-        private ArrayList<TransResult> results = new ArrayList<>();
         private int i;
         private int j;
-        private boolean isfileexist;
         private ProgressDialog pDialog;
 
         public TransFileTask(Context context) {
-            isfileexist = false;
             i = 0;
             j = 0;
             pDialog = new ProgressDialog(context);
         }
 
         @Override
+        protected void onPreExecute() {
+            pDialog.setMessage(getString(R.string.btn_start_test));
+            pDialog.show();
+            super.onPreExecute();
+        }
+
+        @Override
         protected void onPostExecute(Boolean value) {
+            pDialog.dismiss();
+            for (TransResult result : results) {
+                MyLog.i(result.toString());
+            }
             super.onPostExecute(value);
         }
 
@@ -570,6 +614,7 @@ public class MainActivity extends Activity implements OnClickListener,
             File SourceFile = new File(params[0].getSourceFileInfo().getFilePath());
             File TargetFile = new File(params[0].getTargetPath() + "/" + params[0].getSourceFileInfo().getFileName());
             while (i++ < params[0].getCount()) {
+                publishProgress(i);
                 while (TargetFile.exists()) {
                     TargetFile = new File(params[0].getTargetPath()
                             + "/" + Utils.getFileNameNoEx(params[0].getSourceFileInfo().getFileName())
@@ -588,7 +633,6 @@ public class MainActivity extends Activity implements OnClickListener,
                 }
                 result.setIndexTime(System.currentTimeMillis() - starttime);
                 results.add(result);
-                publishProgress(i);
             }
             Log.i(TAG, "i = " + i);
             return true;

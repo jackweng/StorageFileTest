@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -338,6 +337,7 @@ public class TransFragment extends Fragment implements OnClickListener {
 
     public interface TransFragmentCallBack {
         void ReturnTestCase(ArrayList<TestCase> testCases);
+        void onStartTest(Object obj);
     }
 
     private ArrayList<FileInfo> getSourceFileLists(String path) {
@@ -382,10 +382,7 @@ public class TransFragment extends Fragment implements OnClickListener {
                     info.setSourceFileInfo(SourceFileInfo);
                     info.setTargetPath(TargetDirectoryPath);
                     info.setCount(TransCount);
-                    Message msg = MainActivity.mHandler.obtainMessage();
-                    msg.obj = info;
-                    msg.what = MainActivity.START_FILE_TRANS_TEST;
-                    MainActivity.mHandler.sendMessage(msg);
+                    callBack.onStartTest(info);
                 }
             }
         });

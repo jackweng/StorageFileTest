@@ -6,9 +6,12 @@ package com.tpv.storagefiletest.domain;
 
 public class TransResult {
     private int TestIndex;
+    private String IndexFileName;
+    private long IndexFileSize;
     private boolean IndexResult;
     private String IndexReason;
-    private long IndexTime;
+    private float IndexTime;
+    private String IndexSpeed;
 
     public int getTestIndex() {
         return TestIndex;
@@ -34,11 +37,19 @@ public class TransResult {
         IndexReason = indexReason;
     }
 
-    public long getIndexTime() {
+    public float getIndexTime() {
         return IndexTime;
     }
 
-    public void setIndexTime(long indexTime) {
+    public void setIndexTime(float indexTime) {
         IndexTime = indexTime;
+    }
+
+    @Override
+    public String toString() {
+        return "Index:" + getTestIndex()
+                + "\nResult:" + isIndexResult()
+                + "\nReason:" + getIndexReason()
+                + "\nTime:" + getIndexTime();
     }
 }
