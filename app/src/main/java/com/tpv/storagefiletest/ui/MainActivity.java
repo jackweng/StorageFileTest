@@ -40,15 +40,17 @@ import com.tpv.storagefiletest.ui.PercentageBarChart.Entry;
 import com.tpv.storagefiletest.utils.MyLog;
 import com.tpv.storagefiletest.utils.Utils;
 
-import junit.framework.TestResult;
-
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static java.lang.System.currentTimeMillis;
 
 public class MainActivity extends Activity implements OnClickListener,
         TransFragment.TransFragmentCallBack, StorageMountReceiver.StorageStateListener {
@@ -623,15 +625,28 @@ public class MainActivity extends Activity implements OnClickListener,
                 }
                 TransResult result = new TransResult();
                 result.setTestIndex(i);
-                long starttime = System.currentTimeMillis();
+                result.setFileName(TargetFile.getName());
                 try {
-                    result.setIndexResult(Utils.TransferCopy(SourceFile, TargetFile));
-                    result.setIndexReason("");
+                    FileInputStream fis = new FileInputStream(TargetFile);
+                    result.setFileSizeLong(fis.available());
+                    result.setFileSize(Formatter.formatFileSize(context, fis.available()));
                 } catch (IOException e) {
-                    result.setIndexResult(false);
-                    result.setIndexReason("IOException");
+                    result.setFileSizeLong(0);
+                    result.setFileSize("0KB");
                 }
-                result.setIndexTime(System.currentTimeMillis() - starttime);
+                long starttime = currentTimeMillis();
+                try {
+                    result.setResult(Utils.TransferCopy(SourceFile, TargetFile));
+                    result.setReason("");
+                } catch (IOException e) {
+                    result.setResult(false);
+                    result.setReason("IOException");
+                }
+                long time = System.currentTimeMillis() - starttime;
+                result.setTimeLong(time);
+                DecimalFormat format = new DecimalFormat("#####0.0");
+                result.setTime(format.format(time));
+                result.setSpeed("");
                 results.add(result);
             }
             Log.i(TAG, "i = " + i);
