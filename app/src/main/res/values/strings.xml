@@ -14,7 +14,12 @@
     <string name="dialog_cancle">取消</string>
     <plurals name="show_test_countdown">
         <item quantity="zero">测试已完成！</item>
-        <item quantity="one">正在进行第<xliff:g id="step_count">%1$d</xliff:g>次测试...</item>
-        <item quantity="other">正在进行第<xliff:g id="step_count">%1$d</xliff:g>次测试...</item>
+        <item quantity="one">正在进行第<xliff:g id="step_count">%1$d</xliff:g>次测试(…, &#8230;)</item>
+        <item quantity="other">正在进行第<xliff:g id="step_count">%1$d</xliff:g>次测试(…, &#8230;)</item>
     </plurals>
+    <string name="result_true">成功</string>
+    <string name="result_false">失败</string>
+    <string name="result_index">序列</string>
+    <string name="result_filename">文件名</string>
+    <string name="result_testresult">测试结果</string>
 </resources>

@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="36dip"
+    android:layout_height="36dp"
     android:gravity="center"
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:orientation="horizontal">
@@ -22,10 +22,10 @@
     <com.tpv.storagefiletest.ui.PercentageBarChart
         android:id="@+id/pbc_storage_freesize"
         android:layout_width="match_parent"
-        android:layout_height="32dip"
+        android:layout_height="32dp"
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeight"
-        app:minTickWidth="6dip"
+        app:minTickWidth="6dp"
         app:emptyColor="@color/memory_avail" />
 
 </LinearLayout>

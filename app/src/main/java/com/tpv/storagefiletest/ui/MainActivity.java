@@ -1,6 +1,5 @@
 package com.tpv.storagefiletest.ui;
 
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -15,9 +14,10 @@ import android.os.Message;
 import android.os.StatFs;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
+import android.support.v4.app.FragmentActivity;
 import android.text.format.Formatter;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,6 +27,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tpv.storagefiletest.R;
+import com.tpv.storagefiletest.application.MyApplication;
 import com.tpv.storagefiletest.domain.StorageInfo;
 import com.tpv.storagefiletest.domain.StorageState;
 import com.tpv.storagefiletest.domain.TestCase;
@@ -52,7 +53,7 @@ import java.util.List;
 
 import static java.lang.System.currentTimeMillis;
 
-public class MainActivity extends Activity implements OnClickListener,
+public class MainActivity extends FragmentActivity implements OnClickListener,
         TransFragment.TransFragmentCallBack, StorageMountReceiver.StorageStateListener {
 
     public static final String TAG = "com.tpv.storagefiletest";
@@ -87,12 +88,12 @@ public class MainActivity extends Activity implements OnClickListener,
     private static StorageListAdapter adapter;
     private static ArrayList<StorageInfo> maps = new ArrayList<>();
     private static ArrayList<TestCase> testCases = new ArrayList<>();
-    private static ArrayList<TransResult> results = new ArrayList<>();
-
-    private static String transResult = "result:";
+    private static ArrayList<TransResult> testResults = new ArrayList<>();
 
     private StorageMountReceiver receiver;
     private IntentFilter intentFilter;
+
+    private TransFileTask task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,7 +222,7 @@ public class MainActivity extends Activity implements OnClickListener,
                     break;
                 case START_FILE_TRANS_TEST:
                     TestInfo info = (TestInfo) msg.obj;
-                    TransFileTask task = new TransFileTask(context);
+                    task = new TransFileTask(context);
                     task.execute(info);
                     break;
                 case SHOW_DIALOG_TEST_COUNT:
@@ -542,6 +543,7 @@ public class MainActivity extends Activity implements OnClickListener,
     private static void UpdateFragmentData(int index) {
         switch (index) {
             case 0:
+                MyLog.i("UpdateFragmentData:transFragment");
                 transFragment.setTestCaseInfo(testCases);
                 break;
             case 1:
@@ -559,17 +561,17 @@ public class MainActivity extends Activity implements OnClickListener,
     }
 
     @Override
-    public void onStartTest(Object obj) {
+    public void onStorageStateChanged() {
         Message msg = mHandler.obtainMessage();
-        msg.obj = obj;
-        msg.what = START_FILE_TRANS_TEST;
+        msg.what = MEDIA_MOUNTED_UPDATE_UI;
         mHandler.sendMessage(msg);
     }
 
     @Override
-    public void onStorageStateChanged() {
+    public void onTestStart(TestInfo info) {
         Message msg = mHandler.obtainMessage();
-        msg.what = MEDIA_MOUNTED_UPDATE_UI;
+        msg.what = START_FILE_TRANS_TEST;
+        msg.obj = info;
         mHandler.sendMessage(msg);
     }
 
@@ -587,7 +589,9 @@ public class MainActivity extends Activity implements OnClickListener,
 
         @Override
         protected void onPreExecute() {
+            testResults.clear();
             pDialog.setMessage(getString(R.string.btn_start_test));
+            pDialog.setCancelable(false);
             pDialog.show();
             super.onPreExecute();
         }
@@ -595,10 +599,10 @@ public class MainActivity extends Activity implements OnClickListener,
         @Override
         protected void onPostExecute(Boolean value) {
             pDialog.dismiss();
-            for (TransResult result : results) {
-                MyLog.i(result.toString());
-            }
-            super.onPostExecute(value);
+            MyApplication application = (MyApplication) context.getApplicationContext();
+            application.setResults(testResults);
+            transFragment.onTestEnd(testResults);
+            onCancelled(value);
         }
 
         @Override
@@ -626,14 +630,6 @@ public class MainActivity extends Activity implements OnClickListener,
                 TransResult result = new TransResult();
                 result.setTestIndex(i);
                 result.setFileName(TargetFile.getName());
-                try {
-                    FileInputStream fis = new FileInputStream(TargetFile);
-                    result.setFileSizeLong(fis.available());
-                    result.setFileSize(Formatter.formatFileSize(context, fis.available()));
-                } catch (IOException e) {
-                    result.setFileSizeLong(0);
-                    result.setFileSize("0KB");
-                }
                 long starttime = currentTimeMillis();
                 try {
                     result.setResult(Utils.TransferCopy(SourceFile, TargetFile));
@@ -644,17 +640,48 @@ public class MainActivity extends Activity implements OnClickListener,
                 }
                 long time = System.currentTimeMillis() - starttime;
                 result.setTimeLong(time);
-                DecimalFormat format = new DecimalFormat("#####0.0");
-                result.setTime(format.format(time));
-                result.setSpeed("");
-                results.add(result);
+                DecimalFormat format = new DecimalFormat("#####0.00s");
+                result.setTime(format.format(time / 1000.0));
+                try {
+                    FileInputStream fis = new FileInputStream(TargetFile);
+                    result.setFileSizeLong(fis.available());
+                    result.setFileSize(Formatter.formatFileSize(context, fis.available()));
+                } catch (IOException e) {
+                    result.setFileSizeLong(0);
+                    result.setFileSize("0KB");
+                }
+                long speed = result.getFileSizeLong() * 1000 / result.getTimeLong();
+                result.setSpeed(Formatter.formatFileSize(context, speed) + "/s");
+                testResults.add(result);
             }
-            Log.i(TAG, "i = " + i);
             return true;
+        }
+
+        @Override
+        protected void onCancelled(Boolean aBoolean) {
+            if (aBoolean) {
+                MyLog.i("onCancelled");
+                pDialog.dismiss();
+            }
+            super.onCancelled(aBoolean);
         }
     }
 
     private String FormatTestCountString(int count) {
         return getResources().getQuantityString(R.plurals.show_test_countdown, count, count);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_BACK:
+                if (task != null) {
+                    task.cancel(true);
+                }
+                break;
+            default:
+                break;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

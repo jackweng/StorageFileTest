@@ -1,10 +1,13 @@
 package com.tpv.storagefiletest.domain;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Jack.Weng on 2017/6/8.
  */
 
-public class TransResult {
+public class TransResult implements Parcelable {
     private int TestIndex;
     private String FileName;
     private long FileSizeLong;
@@ -95,7 +98,28 @@ public class TransResult {
                 + "\nFileSize:" + getFileSize()
                 + "\nResult:" + getResult()
                 + "\nReason:" + getReason()
+                + "\nTimeLong:" + getTimeLong()
                 + "\nTime:" + getTime()
-                + "\n Speed:" + getSpeed();
+                + "\nSpeed:" + getSpeed();
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+    }
+
+    public static final Parcelable.Creator<TestCase> CREATOR = new Creator<TestCase>() {
+        @Override
+        public TestCase[] newArray(int size) {
+            return new TestCase[0];
+        }
+        @Override
+        public TestCase createFromParcel(Parcel source) {
+            return null;
+        }
+    };
 }

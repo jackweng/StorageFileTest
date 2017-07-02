@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -23,9 +24,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tpv.storagefiletest.R;
+import com.tpv.storagefiletest.application.MyApplication;
 import com.tpv.storagefiletest.domain.FileInfo;
 import com.tpv.storagefiletest.domain.TestCase;
 import com.tpv.storagefiletest.domain.TestInfo;
+import com.tpv.storagefiletest.domain.TransResult;
 import com.tpv.storagefiletest.ui.MainActivity;
 import com.tpv.storagefiletest.utils.MyLog;
 import com.tpv.storagefiletest.utils.Utils;
@@ -40,19 +43,21 @@ import java.util.ArrayList;
 
 public class TransFragment extends Fragment implements OnClickListener {
 
+    private MyApplication mApp;
     private ListView lv_testcase;
-    private TextView tv_result;
+    private ListView lv_result;
     private ListView lv_files;
     private EditText edt_count;
 
     private Button btn_start;
 
-    private TestCaseAdapter adapter;
+    private TestCaseAdapter testCaseAdapter;
+    private TestResultAdapter testResultAdapter;
     private ArrayList<TestCase> AllTestCases;
     private ArrayList<FileInfo> infos;
     private Bundle saveInstanceState;
     private TransFragmentCallBack callBack;
-    private String testresult;
+    private ArrayList<TransResult> testResults;
 
     private Context context;
 
@@ -73,8 +78,9 @@ public class TransFragment extends Fragment implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         MyLog.i("TransFragment,onCreate.");
         super.onCreate(savedInstanceState);
-        callBack = (TransFragmentCallBack) getActivity();
         context = MainActivity.context;
+        mApp = (MyApplication) context.getApplicationContext();
+        callBack = (TransFragmentCallBack) getActivity();
     }
 
     @Nullable
@@ -85,9 +91,9 @@ public class TransFragment extends Fragment implements OnClickListener {
         View view = inflater.inflate(R.layout.trans_fragment, container, false);
         btn_start = (Button) view.findViewById(R.id.btn_start_test);
         btn_start.setOnClickListener(this);
-        lv_testcase = (ListView) view.findViewById(R.id.lv_testcase_main);
-        adapter = new TestCaseAdapter(getActivity(), AllTestCases);
-        lv_testcase.setAdapter(adapter);
+        lv_testcase = (ListView) view.findViewById(R.id.lv_testcase_trans);
+        testCaseAdapter = new TestCaseAdapter(getActivity(), AllTestCases);
+        lv_testcase.setAdapter(testCaseAdapter);
         lv_testcase.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -95,10 +101,18 @@ public class TransFragment extends Fragment implements OnClickListener {
                     test.setNeedTest(false);
                 }
                 AllTestCases.get(position).setNeedTest(!AllTestCases.get(position).isNeedTest());
-                adapter.notifyDataSetChanged();
+                testCaseAdapter.notifyDataSetChanged();
                 callBack.ReturnTestCase(AllTestCases);
             }
         });
+        if (mApp.getResults() != null) {
+            testResults = mApp.getResults();
+        } else {
+            testResults = new ArrayList<>();
+        }
+        lv_result = (ListView) view.findViewById(R.id.lv_result_trans);
+        testResultAdapter = new TestResultAdapter(context, testResults);
+        lv_result.setAdapter(testResultAdapter);
         return view;
     }
 
@@ -135,6 +149,7 @@ public class TransFragment extends Fragment implements OnClickListener {
     @Override
     public void onDestroyView() {
         MyLog.i("TransFragment,onDestroyView.");
+
         super.onDestroyView();
     }
 
@@ -157,7 +172,6 @@ public class TransFragment extends Fragment implements OnClickListener {
     }
 
     public void setTestCaseInfo(ArrayList<TestCase> cases) {
-        MyLog.i("#####setTestCaseInfo#####");
         if (this.AllTestCases == null) {
             this.AllTestCases = cases;
         } else {
@@ -166,13 +180,24 @@ public class TransFragment extends Fragment implements OnClickListener {
                 this.AllTestCases.add(testCase);
             }
         }
+        testCaseAdapter.notifyDataSetChanged();
     }
 
-    public void setTestResult(String result) {
-        testresult = result;
+    public void onTestEnd(ArrayList<TransResult> results) {
+        if (this.testResults == null) {
+            MyLog.i("testResults == null");
+            this.testResults = results;
+        } else {
+            MyLog.i("testResults == null");
+            this.testResults.clear();
+            for (TransResult result : results) {
+                this.testResults.add(result);
+            }
+        }
+        testResultAdapter.notifyDataSetChanged();
     }
 
-    private class HolderView {
+    private class TestCaseHolderView {
         public RadioButton rb_isneedtest;
         public TextView tv_testcase;
     }
@@ -205,19 +230,76 @@ public class TransFragment extends Fragment implements OnClickListener {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            HolderView holder = new HolderView();
+            TestCaseHolderView holder = new TestCaseHolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.trans_list, null);
                 holder.rb_isneedtest = (RadioButton) convertView.findViewById(R.id.rb_isneedtest);
                 holder.tv_testcase = (TextView) convertView.findViewById(R.id.tv_testcase);
                 convertView.setTag(holder);
             } else {
-                holder = (HolderView) convertView.getTag();
+                holder = (TestCaseHolderView) convertView.getTag();
             }
             holder.rb_isneedtest.setChecked(Cases.get(position).isNeedTest());
             holder.tv_testcase.setText(Cases.get(position).getStorageInfos()[0].getUserLabel()
                     + getString(R.string.from_to)
                     + Cases.get(position).getStorageInfos()[1].getUserLabel());
+            return convertView;
+        }
+    }
+
+    private class TestResultHolderView {
+        public TextView tv_index;
+        public TextView tv_filename;
+        public TextView tv_testresult;
+    }
+
+    private class TestResultAdapter extends BaseAdapter {
+
+        private LayoutInflater inflater;
+        private ArrayList<TransResult> Results;
+
+        public TestResultAdapter(Context context, ArrayList<TransResult> results) {
+            MyLog.i("New adapter.");
+            this.Results = results;
+            inflater = LayoutInflater.from(context);
+        }
+
+        @Override
+        public int getCount() {
+            return Results.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return position;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TestResultHolderView holder = new TestResultHolderView();
+            if (convertView == null) {
+                convertView = inflater.inflate(R.layout.trans_list_result, null);
+                holder.tv_index = (TextView) convertView.findViewById(R.id.tv_result_index);
+                holder.tv_filename = (TextView) convertView.findViewById(R.id.tv_result_filename);
+                holder.tv_testresult = (TextView) convertView.findViewById(R.id.tv_result_result);
+                convertView.setTag(holder);
+            } else {
+                holder = (TestResultHolderView) convertView.getTag();
+            }
+            holder.tv_index.setText(String.valueOf(Results.get(position).getTestIndex()));
+            holder.tv_filename.setText(Results.get(position).getFileName());
+            if (Results.get(position).getResult()) {
+                holder.tv_testresult.setTextColor(Color.GREEN);
+                holder.tv_testresult.setText(getString(R.string.result_true));
+            } else {
+                holder.tv_testresult.setTextColor(Color.RED);
+                holder.tv_testresult.setText(getString(R.string.result_false));
+            }
             return convertView;
         }
     }
@@ -337,7 +419,7 @@ public class TransFragment extends Fragment implements OnClickListener {
 
     public interface TransFragmentCallBack {
         void ReturnTestCase(ArrayList<TestCase> testCases);
-        void onStartTest(Object obj);
+        void onTestStart(TestInfo info);
     }
 
     private ArrayList<FileInfo> getSourceFileLists(String path) {
@@ -382,7 +464,7 @@ public class TransFragment extends Fragment implements OnClickListener {
                     info.setSourceFileInfo(SourceFileInfo);
                     info.setTargetPath(TargetDirectoryPath);
                     info.setCount(TransCount);
-                    callBack.onStartTest(info);
+                    callBack.onTestStart(info);
                 }
             }
         });
