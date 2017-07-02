@@ -149,7 +149,6 @@ public class TransFragment extends Fragment implements OnClickListener {
     @Override
     public void onDestroyView() {
         MyLog.i("TransFragment,onDestroyView.");
-
         super.onDestroyView();
     }
 

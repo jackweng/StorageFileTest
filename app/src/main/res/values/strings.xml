@@ -21,5 +21,8 @@
     <string name="result_false">失败</string>
     <string name="result_index">序列</string>
     <string name="result_filename">文件名</string>
+    <string name="result_filesize">文件大小</string>
+    <string name="result_time">用时</string>
+    <string name="result_speed">传输速度</string>
     <string name="result_testresult">测试结果</string>
 </resources>

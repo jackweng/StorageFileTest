@@ -1,5 +1,6 @@
 package com.tpv.storagefiletest.ui;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -14,7 +15,6 @@ import android.os.Message;
 import android.os.StatFs;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
-import android.support.v4.app.FragmentActivity;
 import android.text.format.Formatter;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -53,7 +53,7 @@ import java.util.List;
 
 import static java.lang.System.currentTimeMillis;
 
-public class MainActivity extends FragmentActivity implements OnClickListener,
+public class MainActivity extends Activity implements OnClickListener,
         TransFragment.TransFragmentCallBack, StorageMountReceiver.StorageStateListener {
 
     public static final String TAG = "com.tpv.storagefiletest";
