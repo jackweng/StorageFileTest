@@ -3,10 +3,7 @@ package com.tpv.storagefiletest.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
-import com.tpv.storagefiletest.domain.StorageState;
-import com.tpv.storagefiletest.ui.MainActivity;
 import com.tpv.storagefiletest.utils.MyLog;
 
 public class StorageMountReceiver extends BroadcastReceiver {

@@ -9,7 +9,6 @@ import com.tpv.storagefiletest.domain.StorageState;
 import com.tpv.storagefiletest.domain.TestCase;
 import com.tpv.storagefiletest.domain.TestInfo;
 import com.tpv.storagefiletest.domain.TransResult;
-import com.tpv.storagefiletest.utils.MyLog;
 
 import java.util.ArrayList;
 

@@ -1,7 +1,5 @@
 package com.tpv.storagefiletest.utils;
 
-import android.os.SystemClock;
-import android.provider.Settings;
 import android.util.Log;
 
 import com.tpv.storagefiletest.domain.StorageInfo;

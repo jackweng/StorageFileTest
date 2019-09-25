@@ -3,7 +3,6 @@ package com.tpv.storagefiletest.fragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +17,8 @@ import com.tpv.storagefiletest.ui.MainActivity;
 import com.tpv.storagefiletest.utils.MyLog;
 
 import java.util.ArrayList;
+
+import androidx.annotation.Nullable;
 
 /**
  * Created by Jack.Weng on 2017/4/24.
@@ -59,7 +60,7 @@ public class SpeedFragment extends Fragment {
         for (TransResult result : results) {
             MyLog.i(result.toString());
         }
-        lv_result_speed = (ListView) view.findViewById(R.id.lv_result_speed);
+        lv_result_speed = view.findViewById(R.id.lv_result_speed);
         adapter = new SpeedResultAdapter(context, results);
         lv_result_speed.setAdapter(adapter);
         return view;
@@ -158,11 +159,11 @@ public class SpeedFragment extends Fragment {
             SpeedHolderView holder = new SpeedHolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.speed_list_result, null);
-                holder.tv_index = (TextView) convertView.findViewById(R.id.tv_result_index_speed);
-                holder.tv_filename = (TextView) convertView.findViewById(R.id.tv_result_filename_speed);
-                holder.tv_filesize = (TextView) convertView.findViewById(R.id.tv_result_filesize_speed);
-                holder.tv_time = (TextView) convertView.findViewById(R.id.tv_result_time_speed);
-                holder.tv_speed = (TextView) convertView.findViewById(R.id.tv_result_speed_speed);
+                holder.tv_index = convertView.findViewById(R.id.tv_result_index_speed);
+                holder.tv_filename = convertView.findViewById(R.id.tv_result_filename_speed);
+                holder.tv_filesize = convertView.findViewById(R.id.tv_result_filesize_speed);
+                holder.tv_time = convertView.findViewById(R.id.tv_result_time_speed);
+                holder.tv_speed = convertView.findViewById(R.id.tv_result_speed_speed);
                 convertView.setTag(holder);
             } else {
                 holder = (SpeedHolderView) convertView.getTag();

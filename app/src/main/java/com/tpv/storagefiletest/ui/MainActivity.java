@@ -198,12 +198,12 @@ public class MainActivity extends Activity implements OnClickListener,
     }
 
     private void initView() {
-        lv_storage_info = (ListView) findViewById(R.id.lv_main_storage_list);
-        tv_trans = (TextView) findViewById(R.id.tv_trans_fragment);
+        lv_storage_info = findViewById(R.id.lv_main_storage_list);
+        tv_trans = findViewById(R.id.tv_trans_fragment);
         tv_trans.setOnClickListener(this);
-        tv_speed = (TextView) findViewById(R.id.tv_speed_fragment);
+        tv_speed = findViewById(R.id.tv_speed_fragment);
         tv_speed.setOnClickListener(this);
-        tv_stress = (TextView) findViewById(R.id.tv_stress_fragment);
+        tv_stress = findViewById(R.id.tv_stress_fragment);
         tv_stress.setOnClickListener(this);
     }
 
@@ -225,8 +225,6 @@ public class MainActivity extends Activity implements OnClickListener,
                     task = new TransFileTask(context);
                     task.execute(info);
                     break;
-                case SHOW_DIALOG_TEST_COUNT:
-                    break;
                 default:
                     break;
             }
@@ -240,9 +238,7 @@ public class MainActivity extends Activity implements OnClickListener,
             } else {
                 testCases.clear();
                 ArrayList<TestCase> tempInfos = Utils.getTestCase(maps);
-                for (TestCase info : tempInfos) {
-                    testCases.add(info);
-                }
+                testCases.addAll(tempInfos);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -256,9 +252,7 @@ public class MainActivity extends Activity implements OnClickListener,
             } else {
                 maps.clear();
                 ArrayList<StorageInfo> tempInfos = getStorageInfo();
-                for (StorageInfo info : tempInfos) {
-                    maps.add(info);
-                }
+                maps.addAll(tempInfos);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -302,11 +296,11 @@ public class MainActivity extends Activity implements OnClickListener,
             HolderView holder = new HolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.list_storage_main, null);
-                holder.tv_label = (TextView) convertView.findViewById(R.id.tv_storage_label);
+                holder.tv_label = convertView.findViewById(R.id.tv_storage_label);
                 holder.tv_label.setWidth(WinWidth / 10);
-                holder.tv_freesize = (TextView) convertView.findViewById(R.id.tv_storage_freesize);
+                holder.tv_freesize = convertView.findViewById(R.id.tv_storage_freesize);
                 holder.tv_freesize.setWidth(WinWidth / 6);
-                holder.pbc_freesize = (PercentageBarChart) convertView.findViewById(R.id.pbc_storage_freesize);
+                holder.pbc_freesize = convertView.findViewById(R.id.pbc_storage_freesize);
                 convertView.setTag(holder);
             } else {
                 holder = (HolderView) convertView.getTag();
@@ -545,10 +539,6 @@ public class MainActivity extends Activity implements OnClickListener,
             case 0:
                 MyLog.i("UpdateFragmentData:transFragment");
                 transFragment.setTestCaseInfo(testCases);
-                break;
-            case 1:
-                break;
-            case 2:
                 break;
             default:
                 break;

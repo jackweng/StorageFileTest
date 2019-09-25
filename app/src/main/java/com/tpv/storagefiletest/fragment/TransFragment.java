@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.view.LayoutInflater;
@@ -36,6 +35,8 @@ import com.tpv.storagefiletest.utils.Utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+
+import androidx.annotation.Nullable;
 
 /**
  * Created by Jack.Weng on 2017/4/21.
@@ -89,9 +90,9 @@ public class TransFragment extends Fragment implements OnClickListener {
         MyLog.i("TransFragment,onCreateView.");
         AllTestCases = getArguments().getParcelableArrayList("AllTestCases");
         View view = inflater.inflate(R.layout.trans_fragment, container, false);
-        btn_start = (Button) view.findViewById(R.id.btn_start_test);
+        btn_start = view.findViewById(R.id.btn_start_test);
         btn_start.setOnClickListener(this);
-        lv_testcase = (ListView) view.findViewById(R.id.lv_testcase_trans);
+        lv_testcase = view.findViewById(R.id.lv_testcase_trans);
         testCaseAdapter = new TestCaseAdapter(getActivity(), AllTestCases);
         lv_testcase.setAdapter(testCaseAdapter);
         lv_testcase.setOnItemClickListener(new OnItemClickListener() {
@@ -110,7 +111,7 @@ public class TransFragment extends Fragment implements OnClickListener {
         } else {
             testResults = new ArrayList<>();
         }
-        lv_result = (ListView) view.findViewById(R.id.lv_result_trans);
+        lv_result = view.findViewById(R.id.lv_result_trans);
         testResultAdapter = new TestResultAdapter(context, testResults);
         lv_result.setAdapter(testResultAdapter);
         return view;
@@ -175,9 +176,7 @@ public class TransFragment extends Fragment implements OnClickListener {
             this.AllTestCases = cases;
         } else {
             this.AllTestCases.clear();
-            for (TestCase testCase : cases) {
-                this.AllTestCases.add(testCase);
-            }
+            this.AllTestCases.addAll(cases);
         }
         testCaseAdapter.notifyDataSetChanged();
     }
@@ -189,9 +188,7 @@ public class TransFragment extends Fragment implements OnClickListener {
         } else {
             MyLog.i("testResults == null");
             this.testResults.clear();
-            for (TransResult result : results) {
-                this.testResults.add(result);
-            }
+            this.testResults.addAll(results);
         }
         testResultAdapter.notifyDataSetChanged();
     }
@@ -232,8 +229,8 @@ public class TransFragment extends Fragment implements OnClickListener {
             TestCaseHolderView holder = new TestCaseHolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.trans_list, null);
-                holder.rb_isneedtest = (RadioButton) convertView.findViewById(R.id.rb_isneedtest);
-                holder.tv_testcase = (TextView) convertView.findViewById(R.id.tv_testcase);
+                holder.rb_isneedtest = convertView.findViewById(R.id.rb_isneedtest);
+                holder.tv_testcase = convertView.findViewById(R.id.tv_testcase);
                 convertView.setTag(holder);
             } else {
                 holder = (TestCaseHolderView) convertView.getTag();
@@ -283,9 +280,9 @@ public class TransFragment extends Fragment implements OnClickListener {
             TestResultHolderView holder = new TestResultHolderView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.trans_list_result, null);
-                holder.tv_index = (TextView) convertView.findViewById(R.id.tv_result_index);
-                holder.tv_filename = (TextView) convertView.findViewById(R.id.tv_result_filename);
-                holder.tv_testresult = (TextView) convertView.findViewById(R.id.tv_result_result);
+                holder.tv_index = convertView.findViewById(R.id.tv_result_index);
+                holder.tv_filename = convertView.findViewById(R.id.tv_result_filename);
+                holder.tv_testresult = convertView.findViewById(R.id.tv_result_result);
                 convertView.setTag(holder);
             } else {
                 holder = (TestResultHolderView) convertView.getTag();
@@ -319,7 +316,7 @@ public class TransFragment extends Fragment implements OnClickListener {
                             builder.setTitle(getString(R.string.title_choose_file));
                             LayoutInflater inflater = LayoutInflater.from(context);
                             View view = inflater.inflate(R.layout.dialog_files_list, null);
-                            lv_files = (ListView) view.findViewById(R.id.lv_trans_files);
+                            lv_files = view.findViewById(R.id.lv_trans_files);
                             final DialogListAdapter dialogListAdapter = new DialogListAdapter(context, infos);
                             builder.setView(view);
                             builder.setPositiveButton(getString(R.string.dialog_next), new DialogInterface.OnClickListener() {
@@ -402,9 +399,9 @@ public class TransFragment extends Fragment implements OnClickListener {
             DialogView dialogView = new DialogView();
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.item_files, null);
-                dialogView.rb_choose = (RadioButton) convertView.findViewById(R.id.rb_files_item);
-                dialogView.tv_name = (TextView) convertView.findViewById(R.id.tv_files_name);
-                dialogView.tv_size = (TextView) convertView.findViewById(R.id.tv_files_size);
+                dialogView.rb_choose = convertView.findViewById(R.id.rb_files_item);
+                dialogView.tv_name = convertView.findViewById(R.id.tv_files_name);
+                dialogView.tv_size = convertView.findViewById(R.id.tv_files_size);
                 convertView.setTag(dialogView);
             } else {
                 dialogView = (DialogView) convertView.getTag();
@@ -450,7 +447,7 @@ public class TransFragment extends Fragment implements OnClickListener {
         builder.setTitle(getString(R.string.title_trans_count));
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.dialog_trans_count, null);
-        edt_count = (EditText) view.findViewById(R.id.edt_count);
+        edt_count = view.findViewById(R.id.edt_count);
         builder.setView(view);
         builder.setPositiveButton(getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
             @Override
